@@ -21,11 +21,12 @@ batch_size = 32
 original_data = pd.read_csv('data/transformed_data/ms.csv', index_col=0)
 original_data = add_noise(original_data)
 original_data = torch.from_numpy(np.array(original_data)).float()
+
 train_dataset = TensorDataset(original_data)
 trainloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=False)
 
 model = CAE()
-mse_loss = nn.BCELoss(reduction=False)
+mse_loss = nn.BCELoss(reduction='none')
 optimizer = optim.Adam(model.parameters(), lr=0.0001)
 
 original_data = np.array(original_data)
@@ -55,31 +56,28 @@ def train(epoch):
     model.train()
     train_loss = 0
 
-    for idx, data in enumerate(trainloader):
+    for idx, [data] in enumerate(trainloader):
         data = Variable(data)
 
         optimizer.zero_grad()
 
         hidden_representation, recons_x = model(data)
 
+        # print(recons_x)
+
         # Get the weights
         # model.state_dict().keys()
         # change the key by seeing the keys manually.
         # (In future I will try to make it automatic)
         W = model.state_dict()['fc1.weight']
-        loss = loss_function(W, data.view(-1, 784), recons_x,
+        loss = loss_function(W, data, recons_x,
                              hidden_representation, lam)
-
-        loss.backward()
+        loss.mean().backward()
         train_loss += loss.data[0]
-        optimizer.step()
 
-        if idx % log_interval == 0:
-            print('Train epoch: {} [{}/{}({:.0f}%)]\t Loss: {:.6f}'.format(
-                epoch, idx * len(data), len(trainloader.dataset),
-                       100 * idx / len(trainloader),
-                       loss.data[0] / len(data)))
-
-    print('====> Epoch: {} Average loss: {:.4f}'.format(
-        epoch, train_loss / len(trainloader.dataset)))
+    # print(f'epoch: {epoch},  train loss:{}')
     model.samples_write(data, epoch)
+
+
+if __name__ == "__main__":
+    train(10)

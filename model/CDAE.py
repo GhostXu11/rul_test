@@ -59,7 +59,7 @@ class CAE(nn.Module):
             ax.set_xticklabels([])
             ax.set_yticklabels([])
             ax.set_aspect('equal')
-            plt.imshow(sample.reshape(28, 28), cmap='Greys_r')
+            plt.imshow(sample.reshape(-1, 9), cmap='Greys_r')
         if not os.path.exists('out/'):
             os.makedirs('out/')
         plt.savefig('out/{}.png'.format(str(epoch).zfill(3)), bbox_inches='tight')

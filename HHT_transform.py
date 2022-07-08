@@ -54,7 +54,7 @@ def create_marginal_spectrum(data):
 
         # 计算边际谱
         instantaneous_frequency_int = instantaneous_frequency.astype(int)
-        ssp = np.zeros(int(51200 / 2))
+        ssp = np.zeros(int(fs / 2))
         for j in range(ssp.shape[0]):
             ssp[j] = np.sum(amplitude_envelope[1:][instantaneous_frequency_int == j])
         Marginal_Spectrum_data["Marginal_Spectrum_%d" % n] = list(ssp)
@@ -62,7 +62,7 @@ def create_marginal_spectrum(data):
     output_data_imf = pd.DataFrame(imf_data)
     output_data_if = pd.DataFrame(if_data)
     output_data_ms = pd.DataFrame(Marginal_Spectrum_data)
-    print(output_data_imf, output_data_if, output_data_ms)
+    # print(output_data_imf, output_data_if, output_data_ms)
     return output_data_ms
 
 
@@ -74,16 +74,51 @@ def create_marginal_spectrum(data):
 # df = pd.read_csv('./data/IEEE_phm_2022/Learning_set/Bearing1_1/acc_00001.csv', names=name)
 # hori = signal.savgol_filter(df.hori, 49, 3)
 # hori_margin = create_marginal_spectrum(hori)
-# # hori_margin = hori_margin.T
-# print(hori_margin) # 25600 * 9
+#
+# count = 0
+# ans = pd.DataFrame()
+# for i in range(len(hori_margin)):
+#     count += 1
+#     i += 1
+#     if count % 10 == 0:
+#         data = hori_margin.iloc[i-10:i, :]
+#         column = data.columns.values
+#         columns = []
+#         for j in column:
+#             columns.append(j)
+#         print(columns)
+#         data_mean = data[columns].mean()
+#         ans = ans.append(data_mean, ignore_index=True)
+
 
 name = ['h', 'm', 's', '0.000001s', 'hori', 'verti']
-path = './data/IEEE_phm_2022/Learning_set/Bearing1_1'
+path = './data/IEEE_phm_2022/train/Bearing1_1'
 dirs = os.listdir(path)
+data_list = []
 for file in dirs:
+    print(f'start transform {file}!')
     file_1 = os.path.join(path, file)
     df = pd.read_csv(file_1, names=name)
     hori = signal.savgol_filter(df.hori, 49, 3)
     hori_margin = create_marginal_spectrum(hori)
-    hori_margin = hori_margin.T
-    hori_margin.to_csv(f'./data/transformed_data/1-1/{file}')
+    count = 0
+    ans = pd.DataFrame()
+    for i in range(len(hori_margin)):
+        count += 1
+        i += 1
+        if count % 10 == 0:
+            data = hori_margin.iloc[i - 10:i, :]
+            column = data.columns.values
+            columns = []
+            for j in column:
+                columns.append(j)
+            data_mean = data[columns].mean()
+            ans = ans.append(data_mean, ignore_index=True)
+        else:
+            continue
+    hori_margin = ans.T.to_numpy()
+    data_list.append(hori_margin)
+    # print(data_list)
+
+with open('./data/transformed_data/data_list_1_1.pickle', "wb") as f:
+    pickle.dump(data_list, f)

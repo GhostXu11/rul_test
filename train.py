@@ -46,8 +46,8 @@ def loss_function(W, x, recons_x, h, lam):
     return mse + contractive_loss.mul_(lam)
 
 
-model = CAE()
-optimizer = optim.Adam(model.parameters(), lr=0.0001)
+# model = CAE()
+# optimizer = optim.Adam(model.parameters(), lr=0.0001)
 
 
 def train(epoch):
@@ -80,4 +80,5 @@ def train(epoch):
 
 
 if __name__ == "__main__":
-    train(10)
+    data = pd.read_csv('./data/transformed_data/1-1/acc_00001.csv')
+    print(data)

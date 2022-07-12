@@ -62,33 +62,9 @@ def create_marginal_spectrum(data):
     output_data_imf = pd.DataFrame(imf_data)
     output_data_if = pd.DataFrame(if_data)
     output_data_ms = pd.DataFrame(Marginal_Spectrum_data)
-    # print(output_data_imf, output_data_if, output_data_ms)
-    return output_data_ms
-
-
-# with open("./data/transformed_data/hori_bearing_1_1.pickle", "rb") as f:
-#     hori = pickle.load(f)
-
-
-# name = ['h', 'm', 's', '0.000001s', 'hori', 'verti']
-# df = pd.read_csv('./data/IEEE_phm_2022/Learning_set/Bearing1_1/acc_00001.csv', names=name)
-# hori = signal.savgol_filter(df.hori, 49, 3)
-# hori_margin = create_marginal_spectrum(hori)
-#
-# count = 0
-# ans = pd.DataFrame()
-# for i in range(len(hori_margin)):
-#     count += 1
-#     i += 1
-#     if count % 10 == 0:
-#         data = hori_margin.iloc[i-10:i, :]
-#         column = data.columns.values
-#         columns = []
-#         for j in column:
-#             columns.append(j)
-#         print(columns)
-#         data_mean = data[columns].mean()
-#         ans = ans.append(data_mean, ignore_index=True)
+    df_new = output_data_ms.apply(lambda x: x.sum())
+    df_new = pd.DataFrame(df_new).T
+    return df_new
 
 
 name = ['h', 'm', 's', '0.000001s', 'hori', 'verti']

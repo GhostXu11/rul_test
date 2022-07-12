@@ -16,7 +16,7 @@ def add_noise(data, noise_type="gaussian"):
     if noise_type == "gaussian":
         mean = 0
         var = 1
-        sigma = var ** .5
+        sigma = var ** .0009
         noise = np.random.normal(mean, sigma, data.shape)
         data = data + noise
         return data
@@ -26,14 +26,14 @@ class CAE(nn.Module):
     def __init__(self):
         super(CAE, self).__init__()
 
-        self.fc1 = nn.Linear(9, 3, bias=False)  # Encoder
-        self.fc2 = nn.Linear(3, 9, bias=False)  # Decoder
+        self.fc1 = nn.Linear(1280, 50, bias=False)  # Encoder
+        self.fc2 = nn.Linear(50, 1280, bias=False)  # Decoder
 
         self.relu = nn.ReLU()
         self.sigmoid = nn.Sigmoid()
 
     def encoder(self, x):
-        h1 = self.relu(self.fc1(x.view(-1, 9)))
+        h1 = self.relu(self.fc1(x.view(-1, 1280)))
         return h1
 
     def decoder(self, z):
@@ -44,27 +44,6 @@ class CAE(nn.Module):
         h1 = self.encoder(x)
         h2 = self.decoder(h1)
         return h1, h2
-
-    # Writing data in a grid to check the quality and progress
-    def samples_write(self, x, epoch):
-        _, samples = self.forward(x)
-        # pdb.set_trace()
-        samples = samples.data.cpu().numpy()[:16]
-        fig = plt.figure(figsize=(4, 4))
-        gs = gridspec.GridSpec(4, 4)
-        gs.update(wspace=0.05, hspace=0.05)
-        for i, sample in enumerate(samples):
-            ax = plt.subplot(gs[i])
-            plt.axis('off')
-            ax.set_xticklabels([])
-            ax.set_yticklabels([])
-            ax.set_aspect('equal')
-            plt.imshow(sample.reshape(-1, 9), cmap='Greys_r')
-        if not os.path.exists('out/'):
-            os.makedirs('out/')
-        plt.savefig('out/{}.png'.format(str(epoch).zfill(3)), bbox_inches='tight')
-        # self.c += 1
-        plt.close(fig)
 
 
 mse_loss = nn.BCELoss(reduction=False)
